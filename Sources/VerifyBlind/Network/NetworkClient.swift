@@ -148,7 +148,7 @@ final class PinningDelegate: NSObject, URLSessionDelegate {
     }
 
     private static func leafCertificate(_ trust: SecTrust) -> SecCertificate? {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, macOS 12.0, *) {
             return (SecTrustCopyCertificateChain(trust) as? [SecCertificate])?.first
         } else {
             return SecTrustGetCertificateAtIndex(trust, 0)
@@ -177,7 +177,7 @@ final class PinningDelegate: NSObject, URLSessionDelegate {
 
 extension URLSession {
     func vbData(for request: URLRequest) async throws -> (Data, URLResponse) {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, macOS 12.0, *) {
             return try await self.data(for: request, delegate: nil)
         }
         return try await withCheckedThrowingContinuation { continuation in
