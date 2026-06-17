@@ -32,19 +32,13 @@ public struct VerifyBlindConfig {
     /// `"sha256/BASE64..."` ya da çıplak Base64. `nil`/boş ise pinning uygulanmaz.
     public let certificatePins: [String]?
 
-    /// Cihaz bütünlüğü kanıtı (iOS'ta App Attest / DeviceCheck) üretmek için opsiyonel sağlayıcı.
-    /// `nil` ise `integrity_token` gönderilmez (Android'deki `cloudProjectNumber == null` davranışının karşılığı).
-    /// Üretimde App Attest tabanlı bir sağlayıcı bağlanması önerilir.
-    public let integrityTokenProvider: (() async throws -> String?)?
-
     public init(
         partnerBackendUrl: String,
         generateEndpoint: String = ".",
         verifyblindAppLinkBase: String = "https://app.verifyblind.com/request",
         verifyblindApiUrl: String = "https://api.verifyblind.com",
         skipSecurityChecks: Bool = false,
-        certificatePins: [String]? = nil,
-        integrityTokenProvider: (() async throws -> String?)? = nil
+        certificatePins: [String]? = nil
     ) {
         precondition(!partnerBackendUrl.trimmingCharacters(in: .whitespaces).isEmpty,
                      "partnerBackendUrl boş olamaz.")
@@ -54,7 +48,6 @@ public struct VerifyBlindConfig {
         self.verifyblindApiUrl = verifyblindApiUrl
         self.skipSecurityChecks = skipSecurityChecks
         self.certificatePins = certificatePins
-        self.integrityTokenProvider = integrityTokenProvider
     }
 
     /// `generateEndpoint`'i `partnerBackendUrl`'e göre çözümler (Retrofit `@Url` semantiğinin karşılığı).
@@ -73,6 +66,6 @@ public struct VerifyBlindConfig {
 }
 
 enum SDKVersion {
-    static let value = "2.0.0"
+    static let value = "2.1.0"
     static var userAgent: String { "ios/\(value)" }
 }

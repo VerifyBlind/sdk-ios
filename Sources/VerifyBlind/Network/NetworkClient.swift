@@ -3,7 +3,7 @@ import CryptoKit
 import Security
 
 /// PoP Mode ağ katmanı. Android `NetworkClient`/`KimlikApiService` karşılığı:
-/// - Partner backend proxy'ye POST (`{ public_key, integrity_token?, validations?, custom_data? }` → `{ nonce }`)
+/// - Partner backend proxy'ye POST (`{ public_key, validations?, custom_data? }` → `{ nonce }`)
 /// - VerifyBlind relay'den GET `api/pop/result/{nonce}` (tek seferlik okuma)
 ///
 /// Bağımlılık yok: yalnızca `URLSession`. Partner backend'e opsiyonel SPKI sertifika pinning.
@@ -42,7 +42,6 @@ final class NetworkClient {
     // MARK: - Partner backend
 
     func startAuth(publicKeyBase64: String,
-                   integrityToken: String?,
                    validations: [String: Any]?,
                    customData: [String: Any]?) async throws -> String {
         guard let url = config.resolvedGenerateUrl else {
@@ -50,7 +49,6 @@ final class NetworkClient {
         }
 
         var body: [String: Any] = ["public_key": publicKeyBase64]
-        if let integrityToken { body["integrity_token"] = integrityToken }
         if let validations { body["validations"] = validations }
         if let customData { body["custom_data"] = customData }
 

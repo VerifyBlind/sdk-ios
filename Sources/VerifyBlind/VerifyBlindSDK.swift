@@ -58,26 +58,12 @@ public final class VerifyBlindSDK {
         let publicKeyBase64 = try CryptoUtils.exportPublicKeyBase64(publicKey)
         let pkHash = CryptoUtils.computePkHash(publicKeyBase64)
 
-        // 3. Cihaz bütünlüğü kanıtı (opsiyonel — App Attest/DeviceCheck sağlayıcısı varsa)
-        var integrityToken: String?
-        if let provider = config.integrityTokenProvider {
-            do {
-                integrityToken = try await provider()
-            } catch {
-                if !config.skipSecurityChecks {
-                    throw VerifyBlindError("Cihaz bütünlüğü kanıtı üretilemedi: \(error.localizedDescription)",
-                                           code: .cryptoError, underlyingError: error)
-                }
-            }
-        }
-
-        // 4. Partner backend proxy → { nonce }
+        // 3. Partner backend proxy → { nonce }
         let nonce = try await network.startAuth(publicKeyBase64: publicKeyBase64,
-                                                integrityToken: integrityToken,
                                                 validations: validations,
                                                 customData: customData)
 
-        // 5. VerifyBlind Universal Link aç
+        // 4. VerifyBlind Universal Link aç
         try await openAppLink(nonce: nonce, pkHash: pkHash)
 
         return StartAuthResult(nonce: nonce, pkHash: pkHash, validations: validations)

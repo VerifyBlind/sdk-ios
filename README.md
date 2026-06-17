@@ -66,10 +66,7 @@ if let data = try await sdk.checkVerificationResult(nonce: result.nonce) {
   ephemeral RSA anahtarı yazılımda üretilir — Android tarafıyla aynı.
 - **Universal Link**: `app.verifyblind.com` üzerinde geçerli bir `apple-app-site-association`
   dosyası ve VerifyBlind iOS uygulamasında *Associated Domains* yetkisi gerekir; aksi halde
-  `startAuthentication` Safari'ye düşer.
-- **Cihaz bütünlüğü**: `VerifyBlindConfig.integrityTokenProvider` ile App Attest/DeviceCheck
-  tabanlı bir sağlayıcı bağlanabilir (Android'deki Play Integrity'nin karşılığı, opsiyonel).
-- **Sertifika pinning**: `certificatePins` (OkHttp formatı `sha256/BASE64`) yalnızca partner
+  `startAuthentication` Safari'ye düşer.- **Sertifika pinning**: `certificatePins` (OkHttp formatı `sha256/BASE64`) yalnızca partner
   backend'e uygulanır; relay pinlenmez (Android paritesi). RSA ve EC P-256 sunucu anahtarları desteklenir.
 
 ## Test
