@@ -55,6 +55,29 @@ if let data = try await sdk.checkVerificationResult(nonce: result.nonce) {
 İptal durumunda `checkVerificationResult` bir `VerifyBlindError` fırlatır
 (`code == .userCancelled`, `cancelReason` ile sebep kodu).
 
+### Uygulamanıza geri dönüş (app-to-app)
+
+Kendi uygulamanızdan VerifyBlind'ı açtığınızda bir `returnUrl` geçin; VerifyBlind işlem bitince
+(başarı veya iptal) kullanıcıyı **uygulamanıza geri getirir**:
+
+```swift
+let result = try await sdk.startAuthentication(
+    validations: ["user_id": true],
+    returnUrl: "mypartnerapp://callback"   // uygulamanızın özel şeması
+)
+```
+
+VerifyBlind bitişte `mypartnerapp://callback?nonce={nonce}&status=success` (ya da `status=cancelled`)
+açar → uygulamanız öne gelir; ardından `checkVerificationResult` ile sonucu poll edin.
+
+**İki zorunlu adım:**
+1. Şemayı **Partner Portal → Ayarlar → Uygulama Geri-Dönüş Şeması**'na kaydedin (ör. `mypartnerapp`).
+   VerifyBlind yalnızca şeması kayıtlı değerle **eşleşen** return URL'i açar (fail-closed → açık-yönlendirme
+   önlemi). Boş bırakılırsa geri dönüş kapalıdır.
+2. Şemayı uygulamanızın `Info.plist`'ine `CFBundleURLTypes` altında ekleyin ve `onOpenURL` ile karşılayın.
+
+> QR (cihazlar-arası) akışlarda `returnUrl` yok sayılır — geri dönülecek çağıran uygulama yoktur.
+
 ## Protokol (Android ile aynı)
 
 1. Cihazda **ephemeral RSA-OAEP-2048** keypair üretilir (yazılım anahtarı).
@@ -149,6 +172,29 @@ if let data = try await sdk.checkVerificationResult(nonce: result.nonce) {
 
 On cancellation, `checkVerificationResult` throws a `VerifyBlindError`
 (`code == .userCancelled`, with the reason in `cancelReason`).
+
+### Returning to your app after verification (app-to-app)
+
+When you launch VerifyBlind from your own app, pass a `returnUrl` so VerifyBlind brings the user **back
+to your app** when the flow ends (success or cancel):
+
+```swift
+let result = try await sdk.startAuthentication(
+    validations: ["user_id": true],
+    returnUrl: "mypartnerapp://callback"   // your app's custom scheme
+)
+```
+
+When done, VerifyBlind opens `mypartnerapp://callback?nonce={nonce}&status=success` (or
+`status=cancelled`), foregrounding your app; then resume polling with `checkVerificationResult`.
+
+**Two required steps:**
+1. Register the scheme in **Partner Portal → Settings → App Return Scheme** (e.g. `mypartnerapp`).
+   VerifyBlind only opens a return URL whose **scheme matches your registered value** (fail-closed —
+   prevents open-redirect). Leaving it empty disables app return.
+2. Declare the scheme under `CFBundleURLTypes` in your app's `Info.plist` and handle it in `onOpenURL`.
+
+> QR (cross-device) flows ignore `returnUrl` — there is no caller app to return to.
 
 ### Protocol (same as Android)
 

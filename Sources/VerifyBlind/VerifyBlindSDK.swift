@@ -44,11 +44,15 @@ public final class VerifyBlindSDK {
     /// - Parameters:
     ///   - validations: İsteğe bağlı doğrulama parametreleri (yaş, uyruk vb.).
     ///   - customData: İsteğe bağlı ek veriler.
+    ///   - returnUrl: İşlem bitince VerifyBlind'ın uygulamanıza geri dönmek için açacağı deeplink
+    ///     (ör. "mypartnerapp://callback"). Şeması, partner-portal'da kayıtlı "app return scheme" ile
+    ///     eşleşmeli; aksi halde VerifyBlind güvenlik gereği geri dönüşü AÇMAZ. nil → geri dönüş yok.
     /// - Returns: `nonce` ve `pkHash` içeren `StartAuthResult`.
     /// - Throws: `VerifyBlindError`.
     @discardableResult
     public func startAuthentication(validations: [String: Any]? = nil,
-                                    customData: [String: Any]? = nil) async throws -> StartAuthResult {
+                                    customData: [String: Any]? = nil,
+                                    returnUrl: String? = nil) async throws -> StartAuthResult {
 
         // 1. Ephemeral RSA-OAEP keypair
         let (privateKey, publicKey) = try CryptoUtils.generateRsaKeyPair()
@@ -64,7 +68,7 @@ public final class VerifyBlindSDK {
                                                 customData: customData)
 
         // 4. VerifyBlind Universal Link aç
-        try await openAppLink(nonce: nonce, pkHash: pkHash)
+        try await openAppLink(nonce: nonce, pkHash: pkHash, returnUrl: returnUrl)
 
         return StartAuthResult(nonce: nonce, pkHash: pkHash, validations: validations)
     }
@@ -140,9 +144,9 @@ public final class VerifyBlindSDK {
     }
 
     /// VerifyBlind Mobile uygulamasını Universal Link ile açar.
-    /// URL: `https://app.verifyblind.com/request?nonce={nonce}&pk_hash={pkHash}`
+    /// URL: `https://app.verifyblind.com/request?nonce={nonce}&pk_hash={pkHash}[&return={returnUrl}]`
     /// Uygulama yüklüyse onu, değilse Safari'yi açar (Android'in app→browser fallback'inin karşılığı).
-    private func openAppLink(nonce: String, pkHash: String) async throws {
+    private func openAppLink(nonce: String, pkHash: String, returnUrl: String?) async throws {
         var baseStr = config.verifyblindAppLinkBase
         while baseStr.hasSuffix("/") { baseStr.removeLast() }
         if !baseStr.hasSuffix("/request") { baseStr += "/request" }
@@ -150,10 +154,14 @@ public final class VerifyBlindSDK {
         guard var components = URLComponents(string: baseStr) else {
             throw VerifyBlindError("App Link URL'si geçersiz.", code: .appLinkFailed)
         }
-        components.queryItems = [
+        var items = [
             URLQueryItem(name: "nonce", value: nonce),
             URLQueryItem(name: "pk_hash", value: pkHash)
         ]
+        if let returnUrl, !returnUrl.isEmpty {
+            items.append(URLQueryItem(name: "return", value: returnUrl))
+        }
+        components.queryItems = items
         guard let url = components.url else {
             throw VerifyBlindError("App Link URL'si oluşturulamadı.", code: .appLinkFailed)
         }
