@@ -45,7 +45,7 @@ public final class VerifyBlindSDK {
     ///   - validations: İsteğe bağlı doğrulama parametreleri (yaş, uyruk vb.).
     ///   - customData: İsteğe bağlı ek veriler.
     ///   - returnUrl: İşlem bitince VerifyBlind'ın uygulamanıza geri dönmek için açacağı deeplink
-    ///     (ör. "mypartnerapp://callback"). Şeması, partner-portal'da kayıtlı "app return scheme" ile
+    ///     (ör. "verifyblinddemo://callback"). Şeması, partner-portal'da kayıtlı "app return scheme" ile
     ///     eşleşmeli; aksi halde VerifyBlind güvenlik gereği geri dönüşü AÇMAZ. nil → geri dönüş yok.
     /// - Returns: `nonce` ve `pkHash` içeren `StartAuthResult`.
     /// - Throws: `VerifyBlindError`.
