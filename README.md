@@ -95,7 +95,7 @@ açar → uygulamanız öne gelir; ardından `checkVerificationResult` ile sonuc
 | Alan | Anlam |
 |------|-------|
 | `user_id` | Ulusal-no bazlı kimlik (TCKN yoksa boş). Partner'a özel HMAC. |
-| `nsbd_id` | Biyografik kişi kodu; kişinin tüm kartlarında sabit. **Olasılıksal ipucu** — tek başına sert dedup kararı vermeyin. |
+| `nsbd_id` | Biyografik kişi kodu; **ad ve doğum tarihi değişmediği sürece** kişinin kartları arasında sabit. **Olasılıksal ipucu** — tek başına sert dedup kararı vermeyin. Kayabileceği durumlar: isim değişikliği (ör. evlilik) ve uzun isimlerin kimlik kartı ↔ pasaport arasında farklı kırpılması (MRZ kırpması ICAO 9303'te ihraççı takdirindedir). Sert karar için `doc_id` kullanın. |
 | `doc_id` | Belge kodu; aynı `doc_id` = aynı fiziksel belge = aynı kişi (sert sinyal). |
 
 Üçü de partner'a özeldir (başka partner ile eşleştirilemez) ve TCKN'ye döndürülemez. Üçünü birlikte saklamak, bir ülke ulusal kimlik numarasını sonradan kaldırsa/eklese veya kullanıcı kartını yenilese bile aynı kişiyi tanımanızı sağlar.
@@ -214,7 +214,7 @@ returns **three codes at once** — store all three:
 | Field | Meaning |
 |-------|---------|
 | `user_id` | National-number-based identity (empty if there is no national number). Partner-specific HMAC. |
-| `nsbd_id` | Biographic person code; stable across all of a person's cards. **Probabilistic hint** — don't make a hard dedup decision on it alone. |
+| `nsbd_id` | Biographic person code; stable across a person's cards **as long as name and date of birth do not change**. **Probabilistic hint** — don't make a hard dedup decision on it alone. It can drift on a name change (e.g. marriage) or when a long name is truncated differently on an ID card vs a passport (MRZ truncation is at the issuer's discretion under ICAO 9303). Use `doc_id` for hard decisions. |
 | `doc_id` | Document code; the same `doc_id` = the same physical document = the same person (hard signal). |
 
 All three are partner-specific (cannot be correlated with another partner) and cannot be reversed to a
