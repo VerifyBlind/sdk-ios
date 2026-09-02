@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build + Test (SwiftPM)
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SPM cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/org.swift.swiftpm
+          key: spm-${{ runner.os }}-${{ hashFiles('Package.swift') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Swift version
+        run: swift --version
+
+      # 1) Kripto/mantık testleri — macOS host'ta, simülatör gerekmez.
+      #    (UIKit'e bağlı Universal Link yolu canImport ile dışlanır.)
+      - name: swift build
+        run: swift build -v
+
+      - name: swift test
+        run: swift test -v
+
+      # 2) iOS'a özgü derleme doğrulaması — UIKit yolu dahil tüm modül iOS için derleniyor mu?
+      #    Generic simülatör hedefi: belirli cihaz adına (flaky) bağımlı değil, booted sim gerekmez.
+      - name: xcodebuild (iOS Simulator compile)
+        run: |
+          set -eo pipefail
+          xcodebuild build \
+            -scheme VerifyBlind \
+            -destination 'generic/platform=iOS Simulator' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
