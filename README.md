@@ -21,9 +21,11 @@ Ya da `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/<org>/sdk-ios.git", from: "2.0.0")
+    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", branch: "main")
 ]
 ```
+
+Şu an sürüm etiketi yayımlanmadığı için paket `main` dalından eklenir.
 
 Minimum dağıtım hedefi: **iOS 13**.
 
@@ -42,7 +44,7 @@ let sdk = VerifyBlindSDK(
 
 // 1) Akışı başlat (Universal Link otomatik açılır)
 let result = try await sdk.startAuthentication(
-    validations: ["age_over": 18]
+    validations: ["age": "18+", "user_id": true]
 )
 
 // 2) Kullanıcı VerifyBlind app'inde onayladıktan sonra sonucu poll et
@@ -86,7 +88,7 @@ açar → uygulamanız öne gelir; ardından `checkVerificationResult` ile sonuc
 4. Universal Link açılır: `https://app.verifyblind.com/request?nonce=...&pk_hash=...`
 5. Relay `GET /api/pop/result/{nonce}` poll edilir; şifreli yanıt **lokalde** çözülür:
    - `enc_key`: RSA-OAEP-**SHA256**/MGF1-SHA256 ile sarılı (base64) AES anahtarı
-   - `blob`: `IV(12) + Ciphertext + Tag(16)` AES-GCM-128
+   - `blob`: `IV(12) + Ciphertext + Tag(16)`, AES-256-GCM (128 bit etiket)
 
 ## Tekillik / Tanıma Kodları
 
@@ -94,7 +96,7 @@ açar → uygulamanız öne gelir; ardından `checkVerificationResult` ile sonuc
 
 | Alan | Anlam |
 |------|-------|
-| `user_id` | Ulusal-no bazlı kimlik (TCKN yoksa boş). Partner'a özel HMAC. |
+| `user_id` | Ulusal-no bazlı kimlik. Partner'a özel HMAC. Türetilemezse alan yanıtta yer almaz. |
 | `nsbd_id` | Biyografik kişi kodu; **ad ve doğum tarihi değişmediği sürece** kişinin kartları arasında sabit. **Olasılıksal ipucu** — tek başına sert dedup kararı vermeyin. Kayabileceği durumlar: isim değişikliği (ör. evlilik) ve uzun isimlerin kimlik kartı ↔ pasaport arasında farklı kırpılması (MRZ kırpması ICAO 9303'te ihraççı takdirindedir). Sert karar için `doc_id` kullanın. |
 | `doc_id` | Belge kodu; aynı `doc_id` = aynı fiziksel belge = aynı kişi (sert sinyal). |
 
@@ -109,7 +111,8 @@ açar → uygulamanız öne gelir; ardından `checkVerificationResult` ile sonuc
   ephemeral RSA anahtarı yazılımda üretilir — Android tarafıyla aynı.
 - **Universal Link**: `app.verifyblind.com` üzerinde geçerli bir `apple-app-site-association`
   dosyası ve VerifyBlind iOS uygulamasında *Associated Domains* yetkisi gerekir; aksi halde
-  `startAuthentication` Safari'ye düşer.- **Sertifika pinning**: `certificatePins` (OkHttp formatı `sha256/BASE64`) yalnızca partner
+  `startAuthentication` Safari'ye düşer.
+- **Sertifika pinning**: `certificatePins` (OkHttp formatı `sha256/BASE64`) yalnızca partner
   backend'e uygulanır; relay pinlenmez (Android paritesi). RSA ve EC P-256 sunucu anahtarları desteklenir.
 
 ## Test
@@ -139,9 +142,11 @@ Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/<org>/sdk-ios.git", from: "2.0.0")
+    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", branch: "main")
 ]
 ```
+
+No version tag is published at the moment, so the package is added from the `main` branch.
 
 Minimum deployment target: **iOS 13**.
 
@@ -160,7 +165,7 @@ let sdk = VerifyBlindSDK(
 
 // 1) Start the flow (the Universal Link opens automatically)
 let result = try await sdk.startAuthentication(
-    validations: ["age_over": 18]
+    validations: ["age": "18+", "user_id": true]
 )
 
 // 2) After the user confirms in the VerifyBlind app, poll for the result
@@ -204,7 +209,7 @@ When done, VerifyBlind opens `verifyblinddemo://callback?nonce={nonce}&status=su
 4. The Universal Link opens: `https://app.verifyblind.com/request?nonce=...&pk_hash=...`
 5. The relay's `GET /api/pop/result/{nonce}` is polled; the encrypted response is decrypted **locally**:
    - `enc_key`: an AES key wrapped with RSA-OAEP-**SHA256**/MGF1-SHA256 (base64)
-   - `blob`: `IV(12) + Ciphertext + Tag(16)` AES-GCM-128
+   - `blob`: `IV(12) + Ciphertext + Tag(16)`, AES-256-GCM (128-bit tag)
 
 ### Uniqueness / Recognition Codes
 
@@ -213,7 +218,7 @@ returns **three codes at once** — store all three:
 
 | Field | Meaning |
 |-------|---------|
-| `user_id` | National-number-based identity (empty if there is no national number). Partner-specific HMAC. |
+| `user_id` | National-number-based identity. Partner-specific HMAC. Left out of the response if it cannot be derived. |
 | `nsbd_id` | Biographic person code; stable across a person's cards **as long as name and date of birth do not change**. **Probabilistic hint** — don't make a hard dedup decision on it alone. It can drift on a name change (e.g. marriage) or when a long name is truncated differently on an ID card vs a passport (MRZ truncation is at the issuer's discretion under ICAO 9303). Use `doc_id` for hard decisions. |
 | `doc_id` | Document code; the same `doc_id` = the same physical document = the same person (hard signal). |
 
