@@ -21,11 +21,9 @@ Ya da `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", branch: "main")
+    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.0")
 ]
 ```
-
-Şu an sürüm etiketi yayımlanmadığı için paket `main` dalından eklenir.
 
 Minimum dağıtım hedefi: **iOS 13**.
 
@@ -142,11 +140,9 @@ Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", branch: "main")
+    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.0")
 ]
 ```
-
-No version tag is published at the moment, so the package is added from the `main` branch.
 
 Minimum deployment target: **iOS 13**.
 
