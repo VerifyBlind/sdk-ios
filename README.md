@@ -244,3 +244,9 @@ swift test
 `Tests/VerifyBlindTests/CryptoParityTests.swift` verifies the SPKI wrapping and the end-to-end hybrid
 decrypt path. ⚠️ Before production, cross-platform parity must also be verified against a **golden
 vector** captured from a real relay.
+
+---
+
+## Lisans · License
+
+Apache License 2.0 — bkz. / see [LICENSE](LICENSE).
