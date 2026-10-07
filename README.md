@@ -82,6 +82,10 @@ açar → uygulamanız öne gelir; ardından `checkVerificationResult` ile sonuc
 
 1. Cihazda **ephemeral RSA-OAEP-2048** keypair üretilir (yazılım anahtarı).
 2. Public key **SPKI** (Base64) olarak partner backend proxy'ye `{ public_key, validations }` gönderilir → `{ nonce }`.
+   Proxy `public_key`'i (ve varsa `custom_data`'yı) aynen iletir, ama **ne sorulacağına sunucu karar
+   verir**: `validations`'ı uygulamadan değil, kendi ayarından koyar (istek değiştirilebilir — `"18+"`
+   yerine `"1+"` soran biri de imzalı `age: true` alır). İmzalı sonuçtaki `validations.age_condition`
+   (yeni enclave sürümlerinde) sorulan koşulu gösterir.
 3. `pk_hash = SHA256(publicKeyBase64)` (lowercase hex).
 4. Universal Link açılır: `https://app.verifyblind.com/request?nonce=...&pk_hash=...`
 5. Relay `GET /api/pop/result/{nonce}` poll edilir; şifreli yanıt **lokalde** çözülür:
@@ -201,6 +205,10 @@ When done, VerifyBlind opens `verifyblinddemo://callback?nonce={nonce}&status=su
 
 1. An **ephemeral RSA-OAEP-2048** keypair is generated on the device (software key).
 2. The public key is sent as **SPKI** (Base64) to the partner backend proxy as `{ public_key, validations }` → `{ nonce }`.
+   The proxy forwards `public_key` (and `custom_data`, if any) unchanged, but **the server decides what
+   is asked**: it sets `validations` from its own configuration, not from the app (the request can be
+   edited — someone who asks `"1+"` instead of `"18+"` also gets a signed `age: true`). In the signed
+   result, `validations.age_condition` (newer enclave releases) states the condition that was asked.
 3. `pk_hash = SHA256(publicKeyBase64)` (lowercase hex).
 4. The Universal Link opens: `https://app.verifyblind.com/request?nonce=...&pk_hash=...`
 5. The relay's `GET /api/pop/result/{nonce}` is polled; the encrypted response is decrypted **locally**:
