@@ -21,7 +21,7 @@ Ya da `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.0")
+    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.1")
 ]
 ```
 
@@ -48,9 +48,15 @@ let result = try await sdk.startAuthentication(
 // 2) Kullanıcı VerifyBlind app'inde onayladıktan sonra sonucu poll et
 //    (UI tarafında periyodik çağır; nil = henüz beklemede)
 if let data = try await sdk.checkVerificationResult(nonce: result.nonce) {
+    // data["token"] → imzalı ham yanıt; KARAR İÇİN bunu sunucunuza gönderin
     print("Doğrulandı:", data)
 }
 ```
+
+**Sunucuda doğrulama (önemli):** Engelleme, ödül ya da yaş kapısı gibi bir kararı telefondaki sonuca göre
+vermeyin. `data["token"]`'ı (2.3.1+) kendi sunucunuza gönderin; sunucunuz web entegrasyonundakiyle aynı
+doğrulamayı yapar: imzayı (RSA-PSS, enclave anahtarı) doğrular, nonce'u tek seferlik tüketir ve sonucu nonce
+ile sakladığı koşula göre okur. Ayrıntılar: https://verifyblind.com/ai-integration.md (desen A, 4. adım).
 
 İptal durumunda `checkVerificationResult` bir `VerifyBlindError` fırlatır
 (`code == .userCancelled`, `cancelReason` ile sebep kodu).
@@ -144,7 +150,7 @@ Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.0")
+    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.1")
 ]
 ```
 
@@ -171,9 +177,15 @@ let result = try await sdk.startAuthentication(
 // 2) After the user confirms in the VerifyBlind app, poll for the result
 //    (call periodically from the UI; nil = still pending)
 if let data = try await sdk.checkVerificationResult(nonce: result.nonce) {
+    // data["token"] → the signed raw answer; send THIS to your server for any decision
     print("Verified:", data)
 }
 ```
+
+**Verify on your server (important):** do not make a decision (blocking, rewards, age gates) from the result
+on the phone. Send `data["token"]` (2.3.1+) to your own server; it runs the same check as a web integration:
+verify the signature (RSA-PSS, enclave key), consume the nonce once, and read the result against the
+condition stored with the nonce. Details: https://verifyblind.com/ai-integration.md (pattern A, step 4).
 
 On cancellation, `checkVerificationResult` throws a `VerifyBlindError`
 (`code == .userCancelled`, with the reason in `cancelReason`).

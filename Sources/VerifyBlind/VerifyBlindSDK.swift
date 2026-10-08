@@ -76,6 +76,9 @@ public final class VerifyBlindSDK {
     /// VerifyBlind relay'i poll ederek sonucu sorgular. Tamamlanmışsa şifreli yanıtı lokal çözer.
     ///
     /// - Returns: Tamamlanmışsa çözülmüş `[String: Any]`, henüz beklemedeyse `nil`.
+    ///   `token` alanı enclave'in imzaladığı ham yanıttır: base64(JSON `{ payload, signature }`), web
+    ///   widget'ının `onSuccess` token'ıyla aynı biçim. Karar vermeden önce bunu sunucunuza gönderin;
+    ///   sunucunuz imzayı doğrulasın ve nonce'u sakladığı koşulla karşılaştırsın.
     /// - Throws: İptal (`userCancelled`) veya kripto hatalarında `VerifyBlindError`.
     public func checkVerificationResult(nonce: String) async throws -> [String: Any]? {
         guard let privateKey = currentPrivateKey else {
@@ -128,7 +131,23 @@ public final class VerifyBlindSDK {
               let obj = try? JSONSerialization.jsonObject(with: payloadData) as? [String: Any] else {
             throw VerifyBlindError("Çözülen payload JSON değil.", code: .invalidResponse)
         }
-        return obj
+        var result = obj
+        // Sunucu doğrulaması için imzalı ham yanıt (web widget token'ıyla aynı biçim).
+        if let token = Self.signedToken(from: plaintext) {
+            result["token"] = token
+        }
+        return result
+    }
+
+    /// Çözülen yanıt `{ payload, signature }` ise onun base64 hâlini döndürür; değilse `nil`.
+    static func signedToken(from plaintext: String) -> String? {
+        guard let data = plaintext.data(using: .utf8),
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let payload = root["payload"] as? String, !payload.isEmpty,
+              let signature = root["signature"] as? String, !signature.isEmpty else {
+            return nil
+        }
+        return data.base64EncodedString()
     }
 
     // MARK: - Private

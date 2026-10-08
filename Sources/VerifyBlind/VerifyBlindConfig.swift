@@ -66,6 +66,6 @@ public struct VerifyBlindConfig {
 }
 
 enum SDKVersion {
-    static let value = "2.3.0"
+    static let value = "2.3.1"
     static var userAgent: String { "ios/\(value)" }
 }
