@@ -21,7 +21,7 @@ Ya da `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.1")
+    .package(url: "https://github.com/VerifyBlind/verifyblind-sdk-ios.git", from: "2.3.1")
 ]
 ```
 
@@ -150,7 +150,7 @@ Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/VerifyBlind/sdk-ios.git", from: "2.3.1")
+    .package(url: "https://github.com/VerifyBlind/verifyblind-sdk-ios.git", from: "2.3.1")
 ]
 ```
 
